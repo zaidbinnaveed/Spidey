@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Roboto', 'sans-serif'],
+        display: ['Bebas Neue', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -57,6 +61,13 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        spidey: {
+          red: "hsl(var(--spidey-red))",
+          "red-glow": "hsl(var(--spidey-red-glow))",
+          blue: "hsl(var(--spidey-blue))",
+          "blue-dark": "hsl(var(--spidey-blue-dark))",
+          web: "hsl(var(--web-color))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -65,25 +76,28 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        "swing-in": {
+          "0%": { opacity: "0", transform: "translateY(-50px) rotate(-5deg)" },
+          "60%": { transform: "translateY(10px) rotate(2deg)" },
+          "100%": { opacity: "1", transform: "translateY(0) rotate(0)" },
+        },
+        "pulse-glow": {
+          "0%, 100%": { boxShadow: "0 0 20px hsl(0 70% 35% / 0.3)" },
+          "50%": { boxShadow: "0 0 40px hsl(0 70% 35% / 0.6)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "swing-in": "swing-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
       },
     },
   },
