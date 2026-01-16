@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
-import { Menu, X, History, LogOut, User } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X, History, LogOut } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import SpiderLogo from "./SpiderLogo";
@@ -70,57 +70,47 @@ const Header = ({ isAuthenticated = false, onLogout, onHistoryClick }: HeaderPro
       </div>
 
       {/* Mobile Menu */}
-      <AnimatePresenceWrapper isOpen={isMobileMenuOpen}>
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
-          className="md:hidden bg-card border-b border-border"
-        >
-          <div className="container mx-auto px-4 py-4 flex flex-col gap-2">
-            {isAuthenticated && (
-              <>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    onHistoryClick?.();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="justify-start text-muted-foreground hover:text-foreground"
-                >
-                  <History className="w-4 h-4 mr-2" />
-                  History
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    onLogout?.();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="justify-start text-muted-foreground hover:text-foreground"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </Button>
-              </>
-            )}
-          </div>
-        </motion.div>
-      </AnimatePresenceWrapper>
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-card border-b border-border"
+          >
+            <div className="container mx-auto px-4 py-4 flex flex-col gap-2">
+              {isAuthenticated && (
+                <>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      onHistoryClick?.();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="justify-start text-muted-foreground hover:text-foreground"
+                  >
+                    <History className="w-4 h-4 mr-2" />
+                    History
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      onLogout?.();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="justify-start text-muted-foreground hover:text-foreground"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </Button>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.header>
   );
-};
-
-// Helper component for AnimatePresence
-const AnimatePresenceWrapper = ({ 
-  isOpen, 
-  children 
-}: { 
-  isOpen: boolean; 
-  children: React.ReactNode 
-}) => {
-  const { AnimatePresence } = require("framer-motion");
-  return <AnimatePresence>{isOpen && children}</AnimatePresence>;
 };
 
 export default Header;
