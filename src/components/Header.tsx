@@ -28,7 +28,7 @@ const Header = ({ isAuthenticated = false, onLogout, onHistoryClick }: HeaderPro
             whileHover={{ scale: 1.02 }}
           >
             <SpiderLogo size="sm" />
-            <span className="font-display text-2xl tracking-widest text-gradient">
+            <span className="font-display text-2xl md:text-3xl tracking-[0.25em] italic skew-x-[-12deg] text-gradient drop-shadow-[0_0_18px_hsl(var(--spidey-red-glow)/0.35)]">
               SPIDEY
             </span>
           </motion.div>

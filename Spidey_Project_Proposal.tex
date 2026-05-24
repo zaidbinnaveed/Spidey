@@ -1,0 +1,230 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage{array}
+\usepackage{mwe} % provides example-image placeholders (compiles out-of-the-box)
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=spideyred,
+  urlcolor=spideyred,
+  citecolor=spideyred
+}
+
+% --- Theme colors (Spider-Man inspired) ---
+\definecolor{spideyred}{HTML}{B11313}
+\definecolor{spideyredbright}{HTML}{E50914}
+\definecolor{spideyblack}{HTML}{0B0D12}
+\definecolor{spideygray}{HTML}{141826}
+\definecolor{websteel}{HTML}{6D737E}
+
+\pagecolor{white}
+
+\titleformat{\section}
+  {\large\bfseries\color{spideyred}}
+  {\thesection}{0.75em}{}
+\titleformat{\subsection}
+  {\normalsize\bfseries\color{spideyredbright}}
+  {\thesubsection}{0.75em}{}
+
+\setlist[itemize]{leftmargin=*, itemsep=4pt, topsep=6pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textbf{SPIDEY} -- Parallel Web Search Crawler}
+\rhead{\textcolor{spideyred}{Project Proposal}}
+\cfoot{\thepage}
+
+\begin{document}
+
+% =========================
+% Title Page
+% =========================
+\begin{titlepage}
+\begin{center}
+
+% FAST Logo (works out-of-the-box using a placeholder image).
+% Replace "example-image" with a local FAST logo file later (e.g., fast_logo.png).
+\vspace*{0.5cm}
+\includegraphics[width=0.22\textwidth]{example-image}
+
+\vspace{0.8cm}
+{\Huge \bfseries \textcolor{spideyred}{SPIDEY} \par}
+\vspace{0.2cm}
+{\Large \bfseries Parallel Web Search Crawler \par}
+
+\vspace{0.6cm}
+\begin{tcolorbox}[
+  colback=spideyblack!3,
+  colframe=spideyred,
+  boxrule=0.8pt,
+  arc=6pt,
+  left=10pt,right=10pt,top=10pt,bottom=10pt
+]
+{\large \itshape ``Swinging Through the Web of Information --- Faster, Smarter, Unstoppable.''}
+\end{tcolorbox}
+
+\vfill
+
+\begin{tabular}{>{\bfseries}p{0.35\textwidth} p{0.55\textwidth}}
+Group Members & \\
+\hline
+Zaid Bin Naveed & 23K-0028, BAI-6A \\
+Ayan Bin Moeen & 23I-0124, BAI-6A \\
+\end{tabular}
+
+\vspace{1.0cm}
+{\large \textbf{\today} \par}
+
+\vspace{0.3cm}
+{\normalsize \textcolor{websteel}{National University of Computer \& Emerging Sciences (FAST), Pakistan} \par}
+
+\end{center}
+\end{titlepage}
+
+% =========================
+% Abstract
+% =========================
+\section{Abstract}
+\textbf{SPIDEY} is a parallel, depth-limited web crawler and lightweight search engine that concurrently fetches web pages, extracts hyperlinks, and builds a thread-safe inverted index for keyword search. The system is designed to be robust (timeouts, connection failures, invalid content), scalable (configurable concurrency with semaphores and worker pools), and observable (real-time dashboard with crawl statistics, queue depth, active threads, and indexed content). SPIDEY targets fast, practical discovery and retrieval of information from the web while maintaining clean modular architecture and synchronization correctness.
+
+% =========================
+% Introduction
+% =========================
+\section{Introduction}
+The web is vast, dynamic, and highly interconnected. Collecting information at scale requires automation that can traverse links quickly while avoiding duplicates, respecting constraints such as depth limits, and remaining stable under unreliable network conditions. A crawler without concurrency is slow; a concurrent crawler without synchronization is incorrect. SPIDEY addresses both: it accelerates crawling with parallel fetching and ensures correctness via thread-safe shared data structures and carefully designed synchronization primitives.
+
+% =========================
+% Objectives
+% =========================
+\section{Objectives}
+\begin{itemize}
+  \item Build a \textbf{parallel crawler} that fetches and parses pages concurrently with configurable limits.
+  \item Maintain a \textbf{shared URL frontier} supporting depth-limited expansion.
+  \item Ensure \textbf{duplicate detection} with URL normalization and a thread-safe visited set.
+  \item Construct a \textbf{thread-safe inverted index} (keyword $\rightarrow$ postings list) for searching.
+  \item Rank results using \textbf{term frequency (TF)} and provide useful snippets.
+  \item Provide a \textbf{real-time monitoring dashboard} with Start/Pause/Stop/Add Seed controls.
+  \item Produce detailed \textbf{crawl statistics} and logs for observability and debugging.
+\end{itemize}
+
+% =========================
+% Methodology
+% =========================
+\section{Methodology}
+\subsection{Crawling Workflow}
+SPIDEY starts from one or more seed URLs and pushes them into a shared frontier queue along with their depth. Worker threads repeatedly:
+\begin{itemize}
+  \item Pop a URL job from the frontier.
+  \item Acquire a semaphore token to respect the maximum concurrent fetch limit.
+  \item Fetch the page with a timeout and error handling.
+  \item Parse HTML and extract text + hyperlinks.
+  \item Normalize discovered links and conditionally enqueue them at depth+1.
+  \item Update shared statistics and emit real-time dashboard events.
+\end{itemize}
+
+\subsection{Indexing Workflow}
+Text is tokenized, stopwords are removed, and term frequencies are computed per page. Each term is inserted into the inverted index as a posting with:
+\begin{itemize}
+  \item URL
+  \item TF score
+  \item snippet (computed at query time around matched terms)
+\end{itemize}
+
+% =========================
+% Architecture
+% =========================
+\section{Architecture}
+\begin{tcolorbox}[
+  colback=spideygray!4,
+  colframe=spideyred,
+  arc=8pt,
+  boxrule=0.9pt
+]
+\textbf{High-Level Components}
+\begin{itemize}
+  \item \textbf{Crawler Engine (Backend)}: Thread pool, semaphore throttling, frontier queue, URL normalization, page fetch/parse, indexing, stats.
+  \item \textbf{Inverted Index}: Thread-safe dictionary mapping keywords to postings lists.
+  \item \textbf{Event Stream (SSE)}: Emits real-time crawl events and statistics to the dashboard.
+  \item \textbf{Dashboard (Frontend)}: Cinematic, high-tech UI displaying live metrics, indexed pages, top keywords, and search.
+\end{itemize}
+\end{tcolorbox}
+
+% =========================
+% Synchronization Techniques
+% =========================
+\section{Synchronization Techniques}
+\subsection{Shared Frontier (Queue)}
+The URL frontier is a thread-safe queue that stores (URL, depth) jobs. Multiple producer threads can enqueue discovered links, and multiple consumer threads can dequeue jobs concurrently.
+
+\subsection{Visited Set with URL Normalization}
+To prevent duplicate crawling and infinite loops, SPIDEY normalizes URLs by:
+\begin{itemize}
+  \item removing fragments (\#...)
+  \item lowercasing scheme and host
+  \item removing default ports (:80, :443)
+  \item normalizing paths and sorting query parameters
+\end{itemize}
+The visited set is protected by a \textbf{mutex/lock} to ensure atomic check-and-add behavior.
+
+\subsection{Semaphore for Fetch Throttling}
+Even with many worker threads, HTTP fetches are limited using a \textbf{semaphore}. This prevents network saturation and respects practical constraints such as bandwidth and server load.
+
+\subsection{Locks for Index and Stats}
+Updates to the inverted index and statistics are protected by locks to avoid inconsistent state and race conditions. This is critical because multiple threads update shared structures during parsing and indexing.
+
+% =========================
+% Features
+% =========================
+\section{Features}
+\begin{itemize}
+  \item Concurrent crawling using worker threads and a shared frontier.
+  \item Depth-limited expansion and maximum-page safety limit.
+  \item Robust error handling: timeouts, connection failures, non-HTML content, and HTTP errors.
+  \item Thread-safe inverted index with TF-based ranking.
+  \item Snippet generation for search results.
+  \item Detailed crawl statistics: queue size, active workers, visited count, indexed pages, bytes downloaded, failures.
+  \item Configuration file (\texttt{config.json}) for tuning concurrency and limits.
+  \item Logging for debugging and audit.
+\end{itemize}
+
+% =========================
+% GUI Description
+% =========================
+\section{GUI Description}
+The SPIDEY dashboard is styled with a dark cinematic theme inspired by Spider-Man aesthetics:
+\begin{itemize}
+  \item Deep blacks and dark grays with intense red accents (\texttt{\#B11313}, \texttt{\#E50914})
+  \item High-tech monitoring layout (HUD-like cards, live status, progress and metrics)
+  \item Real-time display of active threads, queue size, crawl progress, and errors
+  \item Controls: Start, Pause/Resume, Stop, and Add Seed URL
+  \item Search bar to query the live index and view ranked results with snippets
+  \item Panels for top keywords and recently indexed pages
+\end{itemize}
+
+% =========================
+% Conclusion
+% =========================
+\section{Conclusion}
+SPIDEY combines parallel crawling and lightweight web search into a cohesive, observable system. By carefully applying synchronization primitives (locks, semaphores, queues), it achieves both speed and correctness. Its dashboard-driven workflow makes it practical for demonstrations, experiments, and controlled information discovery tasks.
+
+% =========================
+% References
+% =========================
+\section{References}
+\begin{itemize}
+  \item FastAPI Documentation: \href{https://fastapi.tiangolo.com/}{fastapi.tiangolo.com}
+  \item Requests (Python HTTP): \href{https://requests.readthedocs.io/}{requests.readthedocs.io}
+  \item Beautiful Soup Documentation: \href{https://www.crummy.com/software/BeautifulSoup/bs4/doc/}{crummy.com/software/BeautifulSoup/bs4/doc}
+  \item Server-Sent Events (SSE) Overview: \href{https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events}{MDN Web Docs}
+\end{itemize}
+
+\end{document}
+

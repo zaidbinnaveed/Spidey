@@ -1,0 +1,25 @@
+{
+  "app": {
+    "host": "127.0.0.1",
+    "port": 8000,
+    "log_level": "INFO"
+  },
+  "crawler": {
+    "user_agent": "Spidey/1.0 (+Parallel Web Search Crawler)",
+    "request_timeout_sec": 12,
+    "max_concurrent_fetches": 12,
+    "max_workers": 12,
+    "max_depth": 2,
+    "max_pages": 500,
+    "respect_robots_txt": false,
+    "same_host_only": true,
+    "allowed_schemes": ["http", "https"]
+  },
+  "index": {
+    "min_token_len": 2,
+    "max_snippet_len": 220,
+    "stopwords": [
+      "a","an","and","are","as","at","be","but","by","for","if","in","into","is","it","no","not","of","on","or","s","such","t","that","the","their","then","there","these","they","this","to","was","will","with","you","your"
+    ]
+  }
+}
