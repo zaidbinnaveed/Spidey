@@ -1,81 +1,74 @@
-# SPIDEY — Parallel Web Search Crawler
+# Spidey
 
-**SPIDEY** is a professional, parallel, depth-limited web crawler + lightweight search engine with a real-time monitoring dashboard (Spider-Man inspired cinematic UI).
+A parallel, depth-limited web crawler and lightweight search engine with a real-time operations dashboard.
 
-## Features
+## System overview
 
-- **Parallel crawling**: Thread pool + semaphore-throttled HTTP fetches.
-- **Shared URL frontier**: Thread-safe queue of `(url, depth)` jobs.
-- **Duplicate detection**: URL normalization + thread-safe visited set.
-- **Depth-limited** crawling with **max-pages** safety limit.
-- **Robust fetching**: timeouts, HTTP errors, invalid content-type handling.
-- **Thread-safe inverted index**: `keyword -> [(url, tf_score, snippet)]`.
-- **Keyword ranking**: Term Frequency (TF).
-- **Real-time dashboard**: active workers, queue size, visited count, indexed pages, top keywords, indexed pages monitor, search.
-- **Controls**: Start / Pause / Resume / Stop / Add Seed.
-- **Configurable** via `config.json`.
+Spidey combines a bounded concurrent crawler with a thread-safe inverted index. Operators can start, pause, resume, stop, and extend a crawl while monitoring workers, the frontier, visited URLs, indexed pages, and top terms.
 
-## Project Layout
+## Core behavior
 
-- `backend/`: FastAPI backend + crawler engine
-  - `backend/app.py`: API + Server-Sent Events stream
-  - `backend/spidey/`: crawler, URL normalization, inverted index, config loader
-- `src/`: Vite/React dashboard UI (Tailwind + shadcn)
-- `config.json`: crawler/index settings (concurrency, depth, limits, etc.)
-- `Spidey_Project_Proposal.tex`: full LaTeX project proposal
+- Thread-pool crawling with semaphore-bounded fetch concurrency
+- Shared, thread-safe URL frontier carrying URL and depth
+- URL normalization and duplicate detection
+- Configurable depth, page-count, timeout, and same-host limits
+- Content-type and HTTP error handling
+- Thread-safe inverted index
+- Term-frequency ranking with result snippets
+- Server-Sent Events for live dashboard updates
+- Runtime controls for pause, resume, stop, and additional seeds
 
-## Quick Start (Windows)
+## Architecture
 
-### 1) Backend (FastAPI)
-
-From the `Spidey/` folder:
-
-```bash
-py -m pip install -r backend\requirements.txt
-py -m uvicorn backend.app:app --host 127.0.0.1 --port 8001
+```text
+backend/
+├── app.py                 # FastAPI routes and event stream
+└── spidey/
+    ├── crawler.py         # workers and crawl lifecycle
+    ├── text_index.py      # inverted index and ranking
+    ├── url_utils.py       # normalization and link handling
+    ├── config.py          # validated runtime configuration
+    └── models.py
+src/                       # React and TypeScript dashboard
+config.json                # crawler defaults and safety limits
+Spidey_Project_Proposal.tex
 ```
 
-Backend health:
+## Run locally
+
+### Backend
+
+```bash
+python -m pip install -r backend/requirements.txt
+python -m uvicorn backend.app:app --host 127.0.0.1 --port 8001
+```
+
+Health check:
 
 ```bash
 curl http://127.0.0.1:8001/api/health
 ```
 
-### 2) Frontend (Vite)
+### Dashboard
 
-In a second terminal (still from `Spidey/`):
+In a second terminal:
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-Open the dashboard at `http://localhost:8080`.
-
-Open the dashboard at `http://localhost:5173` (or the next free port if 5173 is busy).
-
-> Vite proxies `/api/*` to `http://127.0.0.1:8001` (configured in `vite.config.ts`).
-
-## Using the Dashboard
-
-- **Seed URL**: enter a starting URL.
-- **Limits**: set `maxDepth` and `maxPages`.
-- Click **Start**.
-- Use **Pause/Resume/Stop** at any time.
-- Use **Add Seed** to inject new starting points into the frontier.
-- Use **Search** to query the live index.
+Open the local URL printed by Vite, normally [http://localhost:5173](http://localhost:5173). API requests are proxied to the backend on port 8001.
 
 ## Configuration
 
-Edit `config.json`:
+Edit `config.json` to control:
 
-- `crawler.max_workers`: number of worker threads in the pool
-- `crawler.max_concurrent_fetches`: semaphore limit for HTTP fetches
-- `crawler.max_depth`: depth limit
-- `crawler.max_pages`: maximum pages to index before stopping
-- `crawler.same_host_only`: keep crawling within the seed host
+- maximum workers and concurrent fetches;
+- crawl depth and page limit;
+- request timeout;
+- whether navigation remains on the seed host.
 
-## Notes
+## Responsible crawling
 
-- This project intentionally uses an **original “Amazing Spider-Man inspired”** UI style (colors, skewed title treatment, HUD panels), without shipping copyrighted fonts/assets.
-
+Use Spidey only on sites you are authorized to crawl. Respect robots policies, terms of service, rate limits, privacy obligations, and server capacity. Default limits are safety controls, not permission to collect data.
